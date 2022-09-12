@@ -109,14 +109,14 @@ void determineHeights(std::vector<long long>& e, long long N, long long capacity
         //i is index of N-1 column, so decrementing it puts it at the last element before N-1
         while (--i > 0)
         {
-            long long* max = &e[indexOfSecondWall + 1]; //starts with first number after N-1 column
+            long long max = e[indexOfSecondWall + 1]; //starts with first number after N-1 column
             //iterate over elements after N-1 column
             for (long long j = indexOfSecondWall + 1; j < N; j++)
             {
                 //get max column height to default-swap with without going over
-                if (e[j] > *max && currentCapacity - e[j] >= capacity)
+                if (e[j] > max && currentCapacity - e[j] >= capacity)
                 {
-                    max = &e[j];
+                    max = e[j];
                 }
 
                 //If current column to swap with eliminates all extra water, swap and leave
@@ -131,12 +131,12 @@ void determineHeights(std::vector<long long>& e, long long N, long long capacity
                 if (j == N - 1)
                 {
                     //Subtract difference between column max and current column
-                    currentCapacity -= (*max - e[i]);
+                    currentCapacity -= (max - e[i]);
 
                     //Swap
-                    long long temp = *max;
+                    long long temp = max;
                     e.insert(e.begin() + indexOfSecondWall, e[i]); //Insert e[i] after N-1 wall
-                    std::remove(e.begin(), e.end(), *max); //Remove element pointed to by max (no ambiguity, since all elements are unique)
+                    std::remove(e.begin(), e.end(), max); //Remove element pointed to by max (no ambiguity, since all elements are unique)
                     e[i] = temp;
                 }
             }
