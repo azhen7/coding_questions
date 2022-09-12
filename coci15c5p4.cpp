@@ -1,4 +1,3 @@
-//adam work
 #include <iostream>
 #include <string>
 #include <vector>
@@ -136,7 +135,8 @@ void determineHeights(std::vector<long long>& e, long long N, long long capacity
 
                     //Swap
                     long long temp = *max;
-                    *max = e[i];
+                    e.insert(e.begin() + indexOfSecondWall, e[i]); //Insert e[i] after N-1 wall
+                    std::remove(e.begin(), e.end(), *max); //Remove element pointed to by max (no ambiguity, since all elements are unique)
                     e[i] = temp;
                 }
             }
