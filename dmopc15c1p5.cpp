@@ -11,9 +11,9 @@ typedef std::vector<int_type> vector_type;
 //Global vars
 std::vector<std::vector<int_type>> scales;
 std::vector<std::vector<int_type>> prefixSum;
-int_type width;
-int_type height;
-int_type areaToSearch;
+std::size_t width;
+std::size_t height;
+std::size_t areaToSearch;
 
 //Function declarations
 void parseScales(std::string str);
@@ -47,23 +47,59 @@ int_type determineMaxScales()
 {
     vector_type factors = determineAllFactors();
     std::set<int_type> allSums;
+
     for (vector_type::size_type index = 0; index < factors.size(); index += 2)
     {
         for (vector_type::size_type i = 0; i < height; i++)
         {
             for (vector_type::size_type j = 0; j < width; j++)
             {
-                if (i + factors[index] - 1 < width && j + factors[index + 1] - 1 < height)
+                //std::cout << factors[index] << ' ' << factors[index + 1] << ' ' << i << ' ' << j << '\n';
+                bool h = i + factors[index] - 1 < height && j + factors[index + 1] - 1 < width;
+                bool v = i + factors[index + 1] - 1 < height && j + factors[index] - 1 < width;
+                if (h)
                 {
                     allSums.insert(bruteForce(i, j, factors[index] - 1, factors[index + 1] - 1));
                 }
-                if (i + factors[index + 1] - 1 < height && j + factors[index] - 1 < width)
+                else
+                {
+                    if (i + factors[index] - 1 >= height)
+                    {
+                        if (j + factors[index + 1] - 1 >= width)
+                        {
+                            allSums.insert(bruteForce(i, j, height - i - 1, width - j - 1));
+                        }
+                        else
+                        {
+                            allSums.insert(bruteForce(i, j, height - i - 1, factors[index + 1] - 1));
+                        }
+                    }
+                    else
+                    {
+                        allSums.insert(bruteForce(i, j, factors[index] - 1, width - j - 1));
+                    }
+                }
+                if (v)
                 {
                     allSums.insert(bruteForce(i, j, factors[index + 1] - 1, factors[index] - 1));
                 }
                 else
                 {
-                    break;
+                    if (i + factors[index + 1] - 1 >= height)
+                    {
+                        if (j + factors[index] - 1 >= width)
+                        {
+                            allSums.insert(bruteForce(i, j, height - i - 1, width - j - 1));
+                        }
+                        else
+                        {
+                            allSums.insert(bruteForce(i, j, height - i - 1, factors[index] - 1));
+                        }
+                    }
+                    else
+                    {
+                        allSums.insert(bruteForce(i, j, factors[index + 1] - 1, width - j - 1));
+                    }
                 }
             }
         }
@@ -88,7 +124,14 @@ vector_type determineAllFactors()
 
 int_type bruteForce(int_type startX, int_type startY, int_type subsectionWidth, int_type subsectionHeight)
 {
-    int_type res = calculateSumOfScalesInSubsection(startX, startY, startX + subsectionWidth, startY + subsectionHeight);
+    //std::cout << startX << ' ' << startY << ' ' << subsectionWidth + 1 << ' ' << subsectionHeight + 1 << ' ';
+    int_type res = calculateSumOfScalesInSubsection(
+        startX,
+        startY,
+        startX + subsectionWidth,
+        startY + subsectionHeight
+    );
+    //std::cout << res << '\n';
     return res;
 }
 
@@ -132,10 +175,10 @@ void calculatePrefixSum()
  */
 int_type calculateSumOfScalesInSubsection(int_type a, int_type b, int_type c, int_type d)
 {
-    if (a > width || b > height || c > width || d > height)
-    {
-        return -1;
-    }
+    // if (a > width || b > height || c > width || d > height)
+    // {
+    //     return -1;
+    // }
 
     int_type subtractLeft = 0;
     int_type subtractTop = 0;
