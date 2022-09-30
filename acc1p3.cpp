@@ -4,6 +4,8 @@
 #include <string>
 #include <algorithm>
 #include <utility>
+#include <vector>
+#include <cmath>
 
 
 
@@ -11,6 +13,7 @@ typedef unsigned long long LL;
 
 LL N, T;
 
+std::vector<std::pair<LL, LL>> optionsBuffer;
 
 
 struct Node
@@ -232,6 +235,36 @@ struct BST_tree
         }
         return std::pair<LL, LL>();
     }
+
+    void contruct()
+    {
+        std::sort(optionsBuffer.begin(), optionsBuffer.end(), [](std::pair<LL, LL> a, std::pair<LL, LL> b)
+        {
+            return a.first < b.first;
+        });
+        root = addNodesInConstruction(0, N - 1);
+    }
+    
+    Node* addNodesInConstruction(long long l, long long r)
+    {
+        if (l > r)
+        {
+            return nullptr;
+        }
+        long long m = (l + r) / 2 + ((l + r) % 2 == 1);
+        Node* constructRoot = new Node(optionsBuffer[m]);
+        constructRoot->left = addNodesInConstruction(l, m - 1);
+        if (constructRoot->left)
+        {
+            constructRoot->left->parent = constructRoot;
+        }
+        constructRoot->right = addNodesInConstruction(m + 1, r);
+        if (constructRoot->right)
+        {
+            constructRoot->right->parent = constructRoot;
+        }
+        return constructRoot;
+    }
 };
 
 BST_tree options;
@@ -254,6 +287,7 @@ int main()
         std::getline(std::cin, input);
         parseOption(input);
     }
+    options.contruct();
 
     std::cout << determineMaxHappiness() << '\n';
 }
@@ -329,5 +363,6 @@ void parseOption(std::string str)
     }
     option[1] /= 10;
 
-    options.insertElement(std::pair<LL, LL>(option[0], option[1]));
+    //options.insertElement(std::pair<LL, LL>(option[0], option[1]));
+    optionsBuffer.push_back(std::pair<LL, LL>(option[0], option[1]));
 }
