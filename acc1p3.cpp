@@ -3,141 +3,239 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
-
-#if SOL_NUM == 3
-
-#include <list>
 #include <utility>
 
-#else
 
-#include <vector>
-#include <array>
-
-#endif
 
 typedef unsigned long long LL;
 
 LL N, T;
 
-#if SOL_NUM == 3
 
-struct node
+
+struct Node
 {
-    std::pair<LL, LL> data;
-    node* right;
-    node* left;
-    node* parent;
+    std::pair<LL, LL> data; // a_i, b_i
+    Node* right;
+    Node* left;
+    Node* parent;
 
-    node(std::pair<LL, LL> d = std::pair<LL, LL>())
+    Node(std::pair<LL, LL> d = std::pair<LL, LL>())
     {
         data = d;
         right = nullptr;
         left = nullptr;
         parent = nullptr;
     }
-    
-    void deleteElement()
+};
+
+struct BST_tree
+{
+    Node* root;
+    Node* minValueNode(Node* node)
     {
+        Node* current = node;
+  
+        /* loop down to find the leftmost leaf */
+        while (current && current->left != nullptr)
+            current = current->left;
+  
+        return current;
+    }
+
+    void deleteElement(Node* node)
+    {
+        if (node == nullptr)
+            return;
         
+        //no children
+        if (node->left == nullptr && node->right == nullptr)
+        {
+            if (node->parent)
+            {
+                if (node->parent->left == node)
+                {
+                    node->parent->left = nullptr;
+                }
+                if (node->parent->right == node)
+                {
+                    node->parent->right = nullptr;
+                }
+            }
+            else
+            {
+                //node is the head
+                delete root;
+                root = nullptr;
+            }
+            return;
+        }
+
+        if (node->right)
+        {
+            Node* temp = minValueNode(node->right);
+            node->data = temp->data;
+            
+            if(temp->parent->left == temp)
+            {
+                temp->parent->left = nullptr;
+            }
+            if(temp->parent->right == temp)
+            {
+                temp->parent->right = nullptr;
+            }
+            delete temp;
+        }
+
+        if (node->right == nullptr && node->left != nullptr)
+        {
+            node->data = node->left->data;
+            Node* OGLeft = node->left;
+            Node* leftRight = node->left->right;
+            if (node->left->left)
+            {
+                node->left->left->parent = node;
+                node->left = node->left->left;
+            }
+            else
+            {
+                node->left = nullptr;
+            }
+            if (leftRight)
+            {
+                leftRight->parent = node;
+                node->right = leftRight;
+            }
+            else
+            {
+                node->right = nullptr;
+            }
+            delete OGLeft;
+            return;
+        }
+        if (node->left == nullptr && node->right != nullptr)
+        {
+            node->data = node->right->data;
+            Node* OGRight = node->right;
+            Node* rightLeft = node->right->left;
+            if (node->right->right)
+            {
+                node->right->right->parent = node;
+                node->right = node->right->right;
+            }
+            if (rightLeft)
+            {
+                rightLeft->parent = node;
+                node->right = rightLeft;
+            }
+            delete OGRight;
+            return;
+        }
     }
 
     void insertElement(std::pair<LL, LL> data)
     {
-        node* it = this;
-        while (it)
+
+        Node* node = new Node(data);
+        if (root == nullptr)
         {
-            if (it->data.first <= data.first)
+            root = node;
+            return;
+        }
+
+        Node* prev = nullptr;
+        Node* temp = root;
+        
+        while (temp)
+        {
+            if (temp->data.first > data.first)
             {
-                if (it->right)
-                {
-                    it = it->right;
-                }
-                else
-                {
-                    node* insert = new node(data);
-                    it->right = insert;
-                    insert->parent = it;
-                    break;
-                }
+                prev = temp;
+                temp = temp->left;
             }
-            else
+            else if (temp->data.first <= data.first)
             {
-                if (it->left)
-                {
-                    it = it->left;
-                }
-                else
-                {
-                    node* insert = new node(data);
-                    it->left = insert;
-                    insert->parent = it;
-                    break;
-                }
+                prev = temp;
+                temp = temp->right;
             }
         }
+        if (prev->data.first > data.first)
+            prev->left = node;
+        else
+            prev->right = node;
+
+        node->parent = prev;
     }
 
-    LL getMax()
+
+    Node* getMaxValueNode()
     {
-        LL max = 0ULL;
-
-        node* it = this;
-        max = this->data.first;
-        while (it->right)
+        if (root == nullptr) 
         {
-            it = it->right;
-            if (it->data.first > max)
-            { 
-                max = it->data.first;
-            }
+            return root;
         }
-
-        this->insertElement({std::max(0LL, (long long) (it->data.first - it->data.second)), it->data.second});
-
-        if (it->left)
+        Node *temp = root;
+        while (temp->right)
         {
-            it->data = it->left->data;
-            node* right = it->left->right;
-            if (it->left->left)
+            temp = temp->right;
+        }
+         
+        return temp;
+    }
+
+    std::pair<LL, LL> getMaxValueNodeAndDelete()
+    {
+        if (root == nullptr) 
+        {
+            return std::pair<LL, LL>();
+        }
+        Node *temp = root;
+        while (temp->right)
+        {
+            temp = temp->right;
+        }
+        //if head root
+        if (temp->parent == nullptr)
+        {
+            std::pair<LL, LL> ret = temp->data;
+            //if no children -> delete entire tree
+            if (temp->left == nullptr)
             {
-                it->left->left->parent = it;
-                it->left = it->left->left;
+                delete root;
+                root = nullptr;
             }
+            //reassign root
             else
             {
-                it->left = nullptr;
+                root = temp->left;
+                root->parent = nullptr;
+                delete temp;
             }
-            if (right)
-            {
-                right->parent = it;
-                it->right = right;
-            }
+            return ret;
         }
-        else
+        //if no children and not head -> just remove node
+        if(temp->left == nullptr && temp->right == nullptr)
         {
-            if (it->parent)
-            {
-                it->parent->right = nullptr;
-            }
-
-            delete it;
-            it = nullptr;
+            temp->parent->right = nullptr;
+            std::pair<LL, LL> ret = temp->data;
+            delete temp;
+            return ret;
         }
-
-        return max;
+        //if one child to the left
+        if (temp->left != nullptr)
+        {
+            temp->left->parent = temp->parent;
+            temp->parent->right = temp->left;
+            std::pair<LL, LL> ret = temp->data;
+            delete temp;
+            return ret;
+        }
+        return std::pair<LL, LL>();
     }
 };
 
-node* options = nullptr;
+BST_tree options;
 
-//std::list<std::pair<LL, LL>> options;
-
-#else
-
-std::vector<std::array<LL, 2>> options;
-
-#endif
 
 void parseInput(std::string str);
 void parseOption(std::string str);
@@ -162,74 +260,29 @@ int main()
 
 LL determineMaxHappiness()
 {
-    //auto test = options;
     LL max = 0ULL;
 
-
-//SLOW - DON'T USE
-#if SOL_NUM == 1
-
-    std::sort(options.begin(), options.end(), [](std::array<LL, 2> a, std::array<LL, 2> b)
-    {
-        return a[0] < b[0];
-    });
     for (LL i = 0; i < T; i++)
     {
-        //add last elem (since it's largest)
-        max += options[N - 1][0];
+        // auto maxIt = options.getMaxValueNode();
+        // max += maxIt->data.first;
 
-        std::array<LL, 2> maxVal = options[N - 1];
-        maxVal[0] = std::max(0LL, (long long) (options[N - 1][0] - options[N - 1][1]));
+        // std::pair<LL, LL> elemToInsert = {
+        //     std::max(0LL, (long long) (maxIt->data.first - maxIt->data.second)),
+        //     maxIt->data.second
+        // };
 
-        for (LL j = 0; j < options.size(); j++)
-        {
-            if (options[j][0] >= maxVal[0])
-            {
-                options.insert(options.begin() + j, maxVal);
-                break;
-            }
-            if (j == options.size() - 1)
-            {
-                options.push_back(maxVal);
-            }
-        }
+        // options.deleteElement(maxIt);
+        // options.insertElement(elemToInsert);
+        auto maxVal = options.getMaxValueNodeAndDelete();
+        max += maxVal.first;
 
-        options.erase(options.end() - 1);
+        options.insertElement({
+            std::max(0LL, (long long) (maxVal.first - maxVal.second)),
+            maxVal.second
+        });
     }
 
-#elif SOL_NUM == 2
-
-    for (LL i = 0; i < T; i++)
-    {
-        LL currentMaxIndex = 0ULL;
-        for (LL j = 0; j < N; j++)
-        {
-            if (options[j][0] > options[currentMaxIndex][0])
-            {
-                currentMaxIndex = j;
-            }
-        }
-        if (options[currentMaxIndex][0] == 0LL)
-        {
-            break;
-        }
-        max += options[currentMaxIndex][0];
-        options[currentMaxIndex][0] = std::max(0LL, (long long) (options[currentMaxIndex][0] - options[currentMaxIndex][1]));
-    }
-
-#elif SOL_NUM == 3
-
-    for (LL i = 0; i < T; i++)
-    {
-        //std::cout << options->getMax() << '\n';
-        max += options->getMax();
-        // auto it = options.end();
-        // --it;
-        // max += it->first;
-        // it->first = std::max(0LL, (long long) (it->first - it->second));
-    }
-
-#endif
 
     return max % 998244353;
 }
@@ -259,10 +312,6 @@ void parseInput(std::string str)
 
 void parseOption(std::string str)
 {
-
-#if SOL_NUM == 3
-
-
     LL option[2] = {0ULL, 0ULL};
     LL j = 0;
     for (LL i = 0; i < str.length() && j < 2; i++)
@@ -280,36 +329,5 @@ void parseOption(std::string str)
     }
     option[1] /= 10;
 
-    if (!options)
-    {
-        options = new node(std::pair<LL, LL>(option[0], option[1]));
-    }
-    else
-    {
-        options->insertElement(std::pair<LL, LL>(option[0], option[1]));
-    }
-
-#else
-
-    std::array<LL, 2> option{0, 0};
-    LL j = 0;
-    for (LL i = 0; i < str.length() && j < 2; i++)
-    {
-        if (str[i] == ' ')
-        {
-            option[j] /= 10;
-            j++;
-        }
-        else
-        {
-            option[j] += str[i] - '0';
-            option[j] *= 10;
-        }
-    }
-    option[1] /= 10;
-
-    options.push_back(option);
-
-#endif
-
+    options.insertElement(std::pair<LL, LL>(option[0], option[1]));
 }
