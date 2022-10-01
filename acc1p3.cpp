@@ -269,10 +269,38 @@ struct BST_tree
 
 BST_tree options;
 
+struct solver
+{
+    std::vector<std::pair<LL, LL>> opt;
+
+    void addElement(std::pair<LL, LL> in)
+    {
+        opt.push_back(in);
+    }
+    LL retrieveMaxElement()
+    {
+        if (opt.size() > 0)
+        {
+            auto it = std::max_element(opt.begin(), opt.end(), [](std::pair<LL, LL> a, std::pair<LL, LL> b)
+            {
+                return a.first < b.first;
+            });
+            LL ret = it->first;
+            it->first = std::max(0LL, (long long) (it->first - it->second));
+            return ret;
+        }
+        return 0ULL;
+    }
+};
+
+solver options_vector;
+
 
 void parseInput(std::string str);
-void parseOption(std::string str);
-LL determineMaxHappiness();
+void parseOption_BST(std::string str);
+LL determineMaxHappiness_BST();
+LL determineMaxHappiness_vector();
+void parseOption_vector(std::string str);
 
 int main()
 {
@@ -285,14 +313,26 @@ int main()
     {
         std::string input;
         std::getline(std::cin, input);
-        parseOption(input);
+        parseOption_vector(input);
     }
-    options.contruct();
+    //options.contruct();
 
-    std::cout << determineMaxHappiness() << '\n';
+    std::cout << determineMaxHappiness_vector() << '\n';
 }
 
-LL determineMaxHappiness()
+LL determineMaxHappiness_vector()
+{
+    LL max = 0ULL;
+
+    for (LL i = 0; i < T; i++)
+    {
+        max += options_vector.retrieveMaxElement();
+    }
+    
+    return max % 998244353;
+}
+
+LL determineMaxHappiness_BST()
 {
     LL max = 0ULL;
 
@@ -321,6 +361,7 @@ LL determineMaxHappiness()
     return max % 998244353;
 }
 
+
 void parseInput(std::string str)
 {
     LL lines[2] = {0ULL, 0ULL};
@@ -344,7 +385,7 @@ void parseInput(std::string str)
     T = lines[1];
 }
 
-void parseOption(std::string str)
+void parseOption_BST(std::string str)
 {
     LL option[2] = {0ULL, 0ULL};
     LL j = 0;
@@ -363,6 +404,29 @@ void parseOption(std::string str)
     }
     option[1] /= 10;
 
-    //options.insertElement(std::pair<LL, LL>(option[0], option[1]));
     optionsBuffer.push_back(std::pair<LL, LL>(option[0], option[1]));
+}
+
+void parseOption_vector(std::string str)
+{
+    LL option[2] = {0ULL, 0ULL};
+    LL j = 0;
+    for (LL i = 0; i < str.length() && j < 2; i++)
+    {
+        if (str[i] == ' ')
+        {
+            option[j] /= 10;
+            j++;
+        }
+        else
+        {
+            option[j] += str[i] - '0';
+            option[j] *= 10;
+        }
+    }
+    option[1] /= 10;
+
+    options_vector.addElement({
+        option[0], option[1]
+    });
 }
