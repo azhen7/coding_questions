@@ -304,16 +304,22 @@ void parseOption_vector(std::string str);
 
 int main()
 {
-    std::string in;
-    std::getline(std::cin, in);
+    std::cin.sync_with_stdio();
+    std::cin.tie(0);
 
-    parseInput(in);
+    // std::string in;
+    // std::getline(std::cin, in);
+
+    // parseInput(in);
+    std::cin >> N >> T;
 
     for (LL i = 0; i < N; i++)
     {
-        std::string input;
-        std::getline(std::cin, input);
-        parseOption_vector(input);
+        LL a, b;
+        std::cin >> a >> b;
+        options_vector.addElement({
+            a, b
+        });
     }
     //options.contruct();
 
