@@ -5,8 +5,8 @@
 #include <map>
 #include <vector>
 #include <cctype>
-#include <unordered_map>
 #include <map>
+#include <stack>
 
 typedef unsigned long long LL;
 
@@ -45,7 +45,7 @@ std::vector<std::pair<std::string, LL>> parse(std::string a)
         {
             std::string nameToInsert(1, a[i]);
             i++;
-            while (a[i] != ' ')
+            if (a[i] != ' ')
             {
                 nameToInsert += a[i];
                 i++;
@@ -82,38 +82,50 @@ std::vector<std::pair<std::string, LL>> parse(std::string a)
 
 std::map<std::string, LL> determineSolution(std::vector<std::pair<std::string, LL>> &a)
 {
-    for (LL index = 0LL; index < a.size(); index++)
+    // for (LL index = 0LL; index < a.size(); index++)
+    // {
+    //     if (a[index].first == RIGHT_BRACKET)
+    //     {
+    //         auto inner = a.begin() + index;
+    //         inner--;
+    //         for ( ; inner->first != LEFT_BRACKET; inner--)
+    //         {
+    //             inner->second = (inner->second * a[index].second)%mod;
+    //         }
+    //         a.erase(a.begin() + index);
+    //         a.erase(inner);
+    //         index -= 2;
+    //     }
+    // }
+
+    std::map<std::string, LL> ret;
+
+    std::stack<LL> currentMultiplier;
+    currentMultiplier.push(1);
+
+    for (LL index = a.size() - 1; index >= 0; index--)
     {
         if (a[index].first == RIGHT_BRACKET)
         {
-            auto inner = a.begin() + index;
-            inner--;
-            for ( ; inner->first != LEFT_BRACKET; inner--)
-            {
-                inner->second = (inner->second * a[index].second)%mod;
-            }
+            currentMultiplier.push((currentMultiplier.top() * a[index].second) % mod);
             a.erase(a.begin() + index);
-            a.erase(inner);
-            index -= 2;
         }
-    }
-
-    std::map<std::string, LL> ret;
-    for (std::pair<std::string, LL> elem : a)
-    {
-        if (ret.find(elem.first) == ret.end())
+        else if (a[index].first == LEFT_BRACKET)
         {
-            ret.insert(elem);
+            currentMultiplier.pop();
+            a.erase(a.begin() + index);
         }
         else
         {
-            ret[elem.first] += elem.second;
+            a[index].second = (a[index].second * currentMultiplier.top()) % mod;
+            auto& addTo = ret[a[index].first];
+            addTo = (addTo + a[index].second) % mod;
         }
-    }
 
-    for (auto &item:ret)
-    {
-        item.second %= mod;
+        if (index == 0)
+        {
+            break;
+        }
     }
 
     return ret;
