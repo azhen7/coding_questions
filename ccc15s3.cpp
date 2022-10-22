@@ -32,60 +32,108 @@ int main()
     std::cout << determineNumberOfPlanesThatLand() << '\n';
 }
 
-ULL determineNumberOfPlanesThatLand()
+std::vector<ULL>::iterator find_lower_bound(std::vector<ULL>& e, ULL val)
 {
-    ULL amount = 0;
-    std::map<ULL, std::vector<ULL>::iterator> gatesConsumed;
+    auto start = e.begin();
+    auto end = e.end();
 
-    for (ULL i = 0; i < planeGates.size(); i++)
+    auto dist = std::distance(start, end);
+    std::vector<ULL>::difference_type step;
+
+    while (dist > 0)
     {
-        auto insertElem = std::make_pair(planeGates[i], planeGates.begin() + planeGates[i] - 1);
-        if (i == 0)
+        step = dist / 2;
+        auto mid = start + step;
+
+        if (*mid < val)
         {
-            gatesConsumed.insert(insertElem);
+            start = std::next(mid);
+            dist -= step + 1;
         }
         else
-        {
-            auto it = gatesConsumed.find(planeGates[i]);
-            if (it == gatesConsumed.end())
-            {
-                gatesConsumed.insert(insertElem);
-            }
-            else
-            {
-                auto fromEnd = it;
-                if (fromEnd == gatesConsumed.begin())
-                {
-                    if (fromEnd->second == planeGates.begin())
-                    {
-                        return amount;
-                    }
-                }
-                else
-                {
-                    fromEnd--;
-                    while (std::distance(fromEnd->second, std::next(fromEnd)->second) == 1)
-                    {
-                        if (fromEnd->second == planeGates.begin())
-                        {
-                            return amount;
-                        }
-                        fromEnd--;
-                    }
-                    fromEnd++;
-                }
-
-                auto t = std::make_pair(
-                    planeGates[i] - ((planeGates.begin() + planeGates[i]) - fromEnd->second),
-                    fromEnd->second - 1
-                );
-                gatesConsumed.insert(t);
-            }
-        }
-        amount++;
+            dist = step;
     }
-    return amount;
+
+    return start;
 }
+
+ULL determineNumberOfPlanesThatLand()
+{
+    std::vector<ULL> s;
+    for (ULL i = 1; i <= numberOfGates; i++)
+    {
+        s.push_back(i);
+    }
+
+    ULL count = 0;
+    for (ULL e : planeGates)
+    {
+        auto lower = find_lower_bound(s, e + 1);
+        //auto lower = std::lower_bound(s.begin(), s.end(), e + 1);
+        if (lower == s.begin())
+        {
+            break;
+        }
+        s.erase(std::prev(lower));
+        count++;
+    }
+    return count;
+}
+
+// ULL determineNumberOfPlanesThatLand()
+// {
+//     ULL amount = 0;
+//     std::map<ULL, std::vector<ULL>::iterator> gatesConsumed;
+
+//     for (ULL i = 0; i < planeGates.size(); i++)
+//     {
+//         auto insertElem = std::make_pair(planeGates[i], planeGates.begin() + planeGates[i] - 1);
+//         if (i == 0)
+//         {
+//             gatesConsumed.insert(insertElem);
+//         }
+//         else
+//         {
+//             auto it = gatesConsumed.find(planeGates[i]);
+//             if (it == gatesConsumed.end())
+//             {
+//                 gatesConsumed.insert(insertElem);
+//             }
+//             else
+//             {
+//                 auto fromEnd = it;
+//                 if (fromEnd == gatesConsumed.begin())
+//                 {
+//                     if (fromEnd->second == planeGates.begin())
+//                     {
+//                         return amount;
+//                     }
+//                 }
+//                 else
+//                 {
+//                     fromEnd--;
+//                     while (std::distance(fromEnd->second, std::next(fromEnd)->second) == 1)
+//                     {
+//                         if (fromEnd->second == planeGates.begin())
+//                         {
+//                             return amount;
+//                         }
+//                         fromEnd--;
+//                     }
+//                     fromEnd++;
+//                 }
+
+//                 auto t = std::make_pair(
+//                     planeGates[i] - ((planeGates.begin() + planeGates[i]) - fromEnd->second),
+//                     fromEnd->second - 1
+//                 );
+//                 gatesConsumed.insert(t);
+//             }
+//         }
+//         amount++;
+//     }
+//     return amount;
+// }
 
 // ULL determineNumberOfPlanesThatLand()
 // {

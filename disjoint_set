@@ -1,0 +1,84 @@
+#ifndef _DISJOINT_SET
+#define _DISJOINT_SET
+
+#include <utility>
+
+
+struct node
+{
+    unsigned long long size;
+    unsigned long long rank;
+
+    node* parent;
+
+    node() {}
+};
+
+node* make_disjoint_set()
+{
+    node* head = new node();
+
+    head->rank = 0;
+    head->size = 1;
+    head->parent = head;
+
+    return head;
+}
+
+node* find(node* a)
+{
+    while (a->parent != a)
+    {
+        node* futureChild = a;
+        a = a->parent;
+        futureChild->parent = a->parent;
+    }
+
+    return a;
+}
+
+void union_by_height(node* first, node* other)
+{
+    node* x = find(first);
+    node* y = find(other);
+
+    //if x and y are in the same disjoint set
+    if (x == y)
+    {
+        return;
+    }
+
+    if (x->size < y->size)
+    {
+        std::swap(x, y);
+    }
+
+    //link root of y to root of x
+    y->parent = x;
+    x->size += y->size;
+}
+
+void union_by_rank(node* first, node* other)
+{
+    node* x = find(first);
+    node* y = find(other);
+
+    //if x and y are in the same disjoint set
+    if (x == y)
+    {
+        return;
+    }
+
+    if (x->rank < y->rank)
+    {
+        std::swap(x, y);
+    }
+
+    y->parent = x;
+    if (x->rank == y->rank)
+    {
+        x->rank++;
+    }
+}
+
+#endif /* _DISJOINT_SET */
