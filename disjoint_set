@@ -2,83 +2,76 @@
 #define _DISJOINT_SET
 
 #include <utility>
+#include <vector>
 
+typedef unsigned long long ULL;
 
-struct node
+struct edge
 {
-    unsigned long long size;
-    unsigned long long rank;
-
-    node* parent;
-
-    node() {}
+    ULL src;
+    ULL dest;
 };
 
-node* make_disjoint_set()
+struct forest
 {
-    node* head = new node();
+    ULL numberOfNodes;
+    ULL numberOfEdges;
+    edge* edges;
+    
+    std::vector<ULL> parent;
+    std::vector<ULL> setSize;
 
-    head->rank = 0;
-    head->size = 1;
-    head->parent = head;
+    forest(ULL a, ULL b)
+    {
+        numberOfNodes = a;
+        numberOfEdges = b;
 
-    return head;
+        edges = new edge[numberOfEdges];
+    }
+
+    ULL findSet(ULL i)
+    {
+        if (parent[i] == i)
+            return i;
+        parent[i] = findSet(parent[i]);
+        return parent[i];
+    }
+
+    ULL unionSet(ULL i, ULL j)
+    {
+        ULL x = findSet(i);
+        ULL y = findSet(j);
+
+        if (x == y)
+        {
+            return 1;
+        }
+
+        parent[x] = y;
+        setSize[y] += setSize[x];
+        return 0;
+    }
+};
+
+ULL initialize(forest& f)
+{
+    f.parent.reserve(f.numberOfNodes);
+    f.setSize.assign(f.numberOfNodes, 1);
+    
+    for (ULL i = 0; i < f.numberOfNodes; i++)
+    {
+        f.parent[i] = i;
+    }
+
+    ULL countDuplicates = 0;
+    for (ULL i = 0; i < f.numberOfNodes; i++)
+    {
+        countDuplicates += f.unionSet(f.edges[i].src, f.edges[i].dest);
+    }
+
+    return countDuplicates;
 }
 
-node* find(node* a)
-{
-    while (a->parent != a)
-    {
-        node* futureChild = a;
-        a = a->parent;
-        futureChild->parent = a->parent;
-    }
 
-    return a;
-}
-
-void union_by_height(node* first, node* other)
-{
-    node* x = find(first);
-    node* y = find(other);
-
-    //if x and y are in the same disjoint set
-    if (x == y)
-    {
-        return;
-    }
-
-    if (x->size < y->size)
-    {
-        std::swap(x, y);
-    }
-
-    //link root of y to root of x
-    y->parent = x;
-    x->size += y->size;
-}
-
-void union_by_rank(node* first, node* other)
-{
-    node* x = find(first);
-    node* y = find(other);
-
-    //if x and y are in the same disjoint set
-    if (x == y)
-    {
-        return;
-    }
-
-    if (x->rank < y->rank)
-    {
-        std::swap(x, y);
-    }
-
-    y->parent = x;
-    if (x->rank == y->rank)
-    {
-        x->rank++;
-    }
-}
 
 #endif /* _DISJOINT_SET */

@@ -1,123 +1,112 @@
-#include <iostream>
-#include <sstream>
+#include <utility>
 #include <vector>
+#include <iostream>
 #include <string>
 
+typedef unsigned long long ULL;
 
 std::string races;
 
-class Edge {
-public:
-    int src, dest;
+struct edge
+{
+    ULL src;
+    ULL dest;
 };
 
-class Graph {
-public:
-    // V-> Number of vertices, E-> Number of edges
-    int V, E;
- 
-    // graph is represented as an array of edges
-    Edge* edge;
-};
-
-std::vector<int> parent, setSize;
-int numSets;
-
-
-Graph* createGraph(int V, int E)
+struct forest
 {
-    Graph* graph = new Graph();
-    graph->V = V;
-    graph->E = E;
- 
-    graph->edge = new Edge[graph->E * sizeof(Edge)];
- 
-    return graph;
-}
-
-int findSet(int i)
-{
-    if(parent[i] == i)
-        return i;
-    parent[i] =  findSet(parent[i]);
-    return parent[i];    
-}
-
-
-bool isSameSet(int i, int j)
-{
-    return findSet(i) == findSet(j);
-}
-
-void UnionSet(Graph* g, int i, int j)
-{
-    int x = findSet(i);
-    int y = findSet(j);
+    ULL numberOfNodes;
+    ULL numberOfEdges;
+    edge* edges;
     
-    if(races[x] != races[y])
-        return;
+    std::vector<ULL> parent;
 
-    parent[x] = y;
-}
-
-void init(Graph* g)
-{
-    parent.assign(g->V, 0);
-    for(int i = 0; i < g->V; i++)
+    forest(ULL a, ULL b)
     {
-        parent[i] = i;
+        numberOfNodes = a;
+        numberOfEdges = b;
+
+        edges = new edge[numberOfEdges];
     }
 
-    for (int i = 0; i < g->E; ++i) {
-        UnionSet(g, g->edge[i].src, g->edge[i].dest);
+    ULL findSet(ULL i)
+    {
+        if (parent[i] == i)
+            return i;
+        parent[i] = findSet(parent[i]);
+        return parent[i];
     }
-    return;
+
+    void unionSet(ULL i, ULL j)
+    {
+        ULL x = findSet(i);
+        ULL y = findSet(j);
+
+        if (races[x] != races[y])
+        {
+            return;
+        }
+
+        parent[x] = y;
+    }
+};
+
+void initialize(forest& f)
+{
+    f.parent.assign(f.numberOfNodes, 0);
+    
+    for (ULL i = 0; i < f.numberOfNodes; i++)
+    {
+        f.parent[i] = i;
+    }
+
+    for (ULL i = 0; i < f.numberOfEdges; i++)
+    {
+        f.unionSet(f.edges[i].src, f.edges[i].dest);
+    }
 }
 
-int N, M, K;
-
+ULL numberOfPlanets;
+ULL numberOfSpaceRoutes;
+ULL numberOfFriends;
 
 int main()
 {
-    std::cin.sync_with_stdio();
+    std::cin.sync_with_stdio(false);
     std::cin.tie(0);
 
-    std::cin >> N >> M >> K;
-    Graph* g =  createGraph(N, M); //vetices, edges
-
-
+    std::cin >> numberOfPlanets >> numberOfSpaceRoutes >> numberOfFriends;
     std::cin >> races;
 
-    for (int i = 0; i < M; i++)
-    {
-        int a, b;
-        std::cin >> a >> b;
+    forest f(numberOfPlanets, numberOfSpaceRoutes);
 
-        g->edge[i].src = a-1;
-        g->edge[i].dest = b-1;
-    }
-    init(g);
-
-    int count = 0;
-    for (int i = 0; i < K; i++)
+    for (ULL i = 0; i < numberOfSpaceRoutes; i++)
     {
-        int x, y;
+        ULL x, y;
         std::cin >> x >> y;
-         
-        int x_path = findSet(x-1);
-        int y_path = findSet(y-1);
 
-        if(x_path == y_path)
-        {
-            count++;
-        }
-
+        f.edges[i].src = x - 1;
+        f.edges[i].dest = y - 1;
     }
-    std::cout << count << std::endl;
 
-    return 0;
+    initialize(f);
 
+    ULL numberOfFriendsThatCanReachDest = 0;
+    for (ULL i = 0; i < numberOfFriends; i++)
+    {
+        ULL friendSrc;
+        ULL friendDest;
+
+        std::cin >> friendSrc >> friendDest;
+
+        ULL test1 = f.findSet(friendSrc - 1);
+        ULL test2 = f.findSet(friendDest - 1);
+
+        if (test1 == test2)
+        {
+            numberOfFriendsThatCanReachDest++;
+        }
+    }
+
+    std::cout << numberOfFriendsThatCanReachDest << '\n';
 }
-
-
-
