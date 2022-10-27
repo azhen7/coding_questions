@@ -29,8 +29,8 @@ string infixToPostfix(string &s)
         if(c == ' ')
             continue;
 
-        if ((c >= 'a' && c <= 'j') || (c >= 'A' && c <= 'J'))
-            result += tolower(c);
+        if (c >= 'a' && c <= 'j')
+            result += c;
         else if (c == '(')
             st.push('(');
         else if (c == ')')
@@ -42,7 +42,7 @@ string infixToPostfix(string &s)
             st.pop();
         }
         else {
-            while (!st.empty() && prec(s[i]) <= prec(st.top()) )
+            while (!st.empty() && prec(c) <= prec(st.top()) )
             {
                 result += st.top();
                 st.pop();
@@ -60,137 +60,37 @@ string infixToPostfix(string &s)
     return result;
 
 }
-
-bool processOr(char c1, char c2)
+bool evaluate(string &line, uint32_t values)
 {
-    if(toupper(c1) == c2 || tolower(c1) == c2)
-        return true;
-    return false;    
-}
+    bool stack[255];
+	int stackSize = 0;
 
-bool evaluatePostfix(string exp)
-{
-    if(exp.size() <= 1)
-        return false;
-
-    stack<char> st;
-    vector<bool> interResult;
-    
-    for (size_t i = 0; i < exp.length(); i++) 
+    for (size_t i = 0; i < line.length(); i++) 
     {
-        char c = exp[i];
-    
-        if ((c >= 'a' && c <= 'j'))
-        {
-            if(i == exp.length()-1)
-            {
-                interResult.push_back(false);
-            }
-            else
-            {
-                st.push(c);
-            }
-        }
-        else
-        {
-           
-            if(c == '~')
-            {
-                if(st.empty())
-                {
-                    if(interResult.size()  >= 1)
-                    {
-                        bool cal = !interResult.back();
-                        interResult.erase(interResult.end() - 1);
-                        interResult.push_back(cal);
-                    }
-                    else{
-                        interResult.push_back(false);
-                    }
-                }
-                else
-                {
-                    if(i == exp.length()-1)
-                    {
-                        interResult.push_back(false);
-                    }
-                    else
-                    {
-                        char temp = toupper(st.top());
-                        st.pop();
-                        st.push(temp);
-                    }
-                }
-            }
+        char c = line[i];
 
-            if(c == '^')
-            {
-                if(st.empty())
-                {   
-                    if(interResult.size()  >= 2)
-                    {
-                        bool cal = interResult[interResult.size() - 1] && interResult[interResult.size() - 2];
-                        interResult.erase(interResult.end() - 1);
-                        interResult.erase(interResult.end() - 1);
-                        interResult.push_back(cal);
-                    }
-                }
-                else
-                {
-                    if(st.size() >= 2)
-                    {
-                        st.pop();
-                        st.pop();
-                    }
-                    else
-                    {
-                        st.pop();
-                        if(interResult.size()  >= 1)
-                        {
-                            interResult.erase(interResult.end() - 1);
-                        }
-                    }
-                                     
-                    interResult.push_back(false);
-                }
-            }             
-            if(c == 'v')
-            {
-                if(st.empty())
-                {
-                    if(interResult.size()  >= 2)
-                    {
-                        bool cal = interResult[interResult.size() - 1] || interResult[interResult.size() - 2];
-                        interResult.erase(interResult.end() - 1);
-                        interResult.erase(interResult.end() - 1);
-                        interResult.push_back(cal);
-                    }
-                }
-                else
-                {
-                    if(st.size() >= 2)
-                    {
-                        char temp1 = st.top();
-                        st.pop();
-                        char temp2 = st.top();
-                        st.pop();
-                        bool ret = processOr(temp1, temp2);
-                        interResult.push_back(ret);
-                    }
-                    else
-                    {
-                        st.pop();
-                    }
-                }
-            }        
+        if (c >= 'a' && c <= 'j') 
+        {
+		    stack[stackSize] = ((values >> (c - 'a')) & 1UL) != 0UL;
+			stackSize++;
+		} else if (c == '~')
+        {
+			stack[stackSize - 1] = !stack[stackSize - 1];
+        }
+		else if (c == '^') {
+			stack[stackSize - 2] = stack[stackSize - 2] && stack[stackSize - 1];
+			stackSize--;
+		} else if (c == 'v') {
+			stack[stackSize - 2] = stack[stackSize - 2] || stack[stackSize - 1];
+			stackSize--;
         }
     }
-    if(interResult.size() > 0)
-        return interResult[0];
-    else
-        return false;
+    if(stackSize >=1 )
+        return stack[0];
+    return false;
 }
 
+static uint32_t NUM_ATOMS = 'j' - 'a' + 1;
 
 int main()
 {
@@ -199,15 +99,23 @@ int main()
 
     string line;
 
-    std::cin.sync_with_stdio();
-    std::cin.tie(0);
 
     for(int i = 0; i < 15; i++)
     {
         std::getline(std::cin, line);
-
+       
         string convLine = infixToPostfix(line);
-        bool ret = evaluatePostfix(convLine);
+        
+        bool ret = true;
+        for (uint32_t index = 0; index < (1UL << NUM_ATOMS); index++) 
+        {
+			if (!evaluate(convLine, index))
+            {
+				ret = false;
+                break;
+            }
+		}
+    
         if ( ret == true)
             std::cout << 'Y';
         else
