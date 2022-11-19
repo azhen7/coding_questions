@@ -1,19 +1,3 @@
-#include <iostream>
-<<<<<<< HEAD
-
-typedef unsigned long long ULL;
-
-ULL numberOfEvenSums;
-
-int main()
-{
-    std::cin.sync_with_stdio(false);
-    std::cin.tie(0);
-
-    std::cin >> numberOfEvenSums;
-
-    //pass
-=======
 #include <string>
 #include <algorithm>
 #include <cmath>
@@ -22,6 +6,7 @@ int main()
 #include <cctype>
 #include <map>
 #include <stack>
+#include <iostream>
 
 
 int main()
@@ -103,9 +88,4 @@ int main()
         }
         std::cout << std::endl;
     }
-
-
-
-
->>>>>>> bd3579fd73b56b953d8821500955b59f6e2d3534
 }
