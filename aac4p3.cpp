@@ -20,10 +20,9 @@ struct pair_equal
 };
 
 std::set<std::pair<LL, LL>, pair_equal> slopes;
+ULL N, M;
 
 ULL countNumberOfPreferedSlopes();
-
-ULL N, M;
 
 int main()
 {
